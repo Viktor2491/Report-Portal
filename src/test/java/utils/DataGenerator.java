@@ -1,63 +1,51 @@
 package utils;
 
 import com.github.javafaker.Faker;
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.filter.log.LogDetail;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
+import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.Locale;
+import java.util.Random;
 
-import static io.restassured.RestAssured.given;
 
+import static java.time.format.DateTimeFormatter.ofPattern;
+
+@Data
 public class DataGenerator {
-    private DataGenerator() {
-    }
 
-    public static class Authorization {
-        private static RequestSpecification requestSpec = new RequestSpecBuilder()
-                .setBaseUri("http://localhost")
-                .setPort(9999)
-                .setAccept(ContentType.JSON)
-                .setContentType(ContentType.JSON)
-                .log(LogDetail.ALL)
-                .build();
-
-        private Authorization() {
+    public static class Registration {
+        private Registration() {
         }
 
 
-        private static utils.ClientData generateUser(String locale, String status) {
-            Faker faker = new Faker(new Locale(locale));
-            return new utils.ClientData(
-                    faker.name().username(),
-                    faker.internet().password(),
-                    status);
+        public static ClientDataInfo generateClientPersonalData(String locale) {
+            Faker faker = new Faker(new Locale("ru"));
+            return new ClientDataInfo(
+                    generateRandomCityFromTheList(),
+                    faker.name().fullName(),
+                    faker.phoneNumber().phoneNumber()
+            );
         }
 
-
-        public static utils.ClientData registerUser(String locale, String status) {
-            utils.ClientData user = generateUser(locale, status);
-            // сам запрос
-            given()// "дано"
-                    .spec(requestSpec) // указываем, какую спецификацию используем
-                    .body(user) // передаём в теле объект, который будет преобразован в JSON
-                    .when() // "когда"
-                    .post("/api/system/users") // на какой путь, относительно BaseUri отправляем запрос
-                    .then() // "тогда ожидаем"
-                    .statusCode(200); // код 200 OK
-            return user;
-
+        public static String generateDateOfMeeting(int days) {
+            return
+                    LocalDate.now().plusDays(days).format(ofPattern("dd.MM.yyyy"));
         }
 
-        public static String invalidLogin() {
-            Faker faker = new Faker(new Locale("en"));
-            return faker.name().username();
-        }
-
-        public static String invalidPassword() {
-            Faker faker = new Faker(new Locale("en"));
-            return faker.internet().password();
+        public static String generateRandomCityFromTheList() {
+            String[] cities = {
+                    "Абакан", "Анадырь", "Архангельск", "Астрахань", "Барнаул", "Белгород", "Биробиджан", "Благовещенск", "Брянск",
+                    "Великий Новгород", "Владивосток", "Владикавказ", "Владимир", "Волгоград", "Вологда", "Воронеж", "Горно-Алтайск",
+                    "Грозный", "Екатеринбург", "Иваново", "Ижевск", "Иркутск", "Йошкар-Ола", "Казань", "Калининград", "Калуга", "Кемерово",
+                    "Киров", "Кострома", "Краснодар", "Красноярск", "Курган", "Курск", "Кызыл", "Липецк", "Магадан", "Магас", "Майкоп",
+                    "Махачкала", "Москва", "Мурманск", "Нальчик", "Нарьян-Мар", "Нижний Новгород", "Новосибирск", "Омск", "Орёл", "Оренбург",
+                    "Пенза", "Пермь", "Петрозаводск", "Петропавловск-Камчатский", "Псков", "Ростов-на-Дону", "Рязань", "Салехард", "Самара",
+                    "Санкт-Петербург", "Саранск", "Саратов", "Севастополь", "Симферополь", "Смоленск", "Ставрополь", "Сыктывкар",
+                    "Тамбов", "Тверь", "Томск", "Тула", "Тюмень", "Улан-Удэ", "Ульяновск", "Уфа", "Хабаровск", "Ханты-Мансийск", "Чебоксары",
+                    "Челябинск", "Черкесск", "Чита", "Элиста", "Южно-Сахалинск", "Якутск", "Ярославль"
+            };
+            Random random = new Random();
+            return cities[random.nextInt(cities.length)];
         }
     }
 }
